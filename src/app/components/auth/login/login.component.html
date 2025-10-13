@@ -1,0 +1,152 @@
+<div class="login-container">
+  <div class="container-fluid vh-100">
+    <div class="row h-100">
+      <!-- Panel izquierdo - Información de la empresa -->
+      <div class="col-md-6 d-none d-md-flex bg-primary text-white">
+        <div class="d-flex flex-column justify-content-center align-items-center p-5">
+          <div class="text-center">
+            <i class="bi bi-shield-lock fs-1 mb-4"></i>
+            <h2 class="mb-4">Bienvenido a Lambda Web</h2>
+            <p class="lead mb-4">
+              Tu plataforma de gestión empresarial más confiable y segura.
+            </p>
+            <div class="feature-list">
+              <div class="d-flex align-items-center mb-3">
+                <i class="bi bi-check-circle-fill me-3"></i>
+                <span>Seguridad avanzada</span>
+              </div>
+              <div class="d-flex align-items-center mb-3">
+                <i class="bi bi-check-circle-fill me-3"></i>
+                <span>Interfaz intuitiva</span>
+              </div>
+              <div class="d-flex align-items-center mb-3">
+                <i class="bi bi-check-circle-fill me-3"></i>
+                <span>Soporte 24/7</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel derecho - Formulario de login -->
+      <div class="col-md-6 d-flex align-items-center justify-content-center">
+        <div class="login-form-container w-100">
+          <div class="card shadow-lg border-0 mx-auto" style="max-width: 400px;">
+            <div class="card-body p-5">
+              <!-- Logo y título -->
+              <div class="text-center mb-4">
+                <div class="mb-3">
+                  <i class="bi bi-person-circle fs-1 text-primary"></i>
+                </div>
+                <h3 class="card-title mb-2">Iniciar Sesión</h3>
+                <p class="text-muted">Ingresa tus credenciales para continuar</p>
+              </div>
+
+              <!-- Mensaje de error -->
+              <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                {{ errorMessage }}
+                <button type="button" class="btn-close" (click)="errorMessage = ''"></button>
+              </div>
+
+              <!-- Formulario -->
+              <form #loginForm="ngForm" (ngSubmit)="onSubmit()" novalidate>
+                <!-- Campo Email -->
+                <div class="mb-3">
+                  <label for="email" class="form-label">
+                    <i class="bi bi-envelope me-2"></i>Email
+                  </label>
+                  <input 
+                    type="email" 
+                    class="form-control form-control-lg"
+                    id="email"
+                    name="USR_Email"
+                    [(ngModel)]="loginData.USR_Email"
+                    #email="ngModel"
+                    required
+                    email
+                    placeholder="Ingresa tu email"
+                    [class.is-invalid]="email.invalid && email.touched"
+                    [class.is-valid]="email.valid && email.touched">
+                  
+                  <div class="invalid-feedback">
+                    <div *ngIf="email.errors?.['required']">El email es requerido</div>
+                    <div *ngIf="email.errors?.['email']">Ingresa un email válido</div>
+                  </div>
+                </div>
+
+                <!-- Campo Password -->
+                <div class="mb-3">
+                  <label for="password" class="form-label">
+                    <i class="bi bi-lock me-2"></i>Contraseña
+                  </label>
+                  <div class="input-group">
+                    <input 
+                      [type]="showPassword ? 'text' : 'password'"
+                      class="form-control form-control-lg"
+                      id="password"
+                      name="USR_Password"
+                      [(ngModel)]="loginData.USR_Password"
+                      #password="ngModel"
+                      required
+                      minlength="8"
+                      placeholder="Ingresa tu contraseña"
+                      [class.is-invalid]="password.invalid && password.touched"
+                      [class.is-valid]="password.valid && password.touched">
+                    
+                    <button 
+                      type="button" 
+                      class="btn btn-outline-secondary"
+                      (click)="togglePasswordVisibility()">
+                      <i class="bi" [class.bi-eye]="!showPassword" [class.bi-eye-slash]="showPassword"></i>
+                    </button>
+                  </div>
+                  
+                  <div class="invalid-feedback">
+                    <div *ngIf="password.errors?.['required']">La contraseña es requerida</div>
+                    <div *ngIf="password.errors?.['minlength']">La contraseña debe tener al menos 8 caracteres</div>
+                  </div>
+                </div>
+
+                <!-- Recordar sesión y olvidé contraseña 
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                  <div class="form-check">
+                    <input 
+                      class="form-check-input" 
+                      type="checkbox" 
+                      id="rememberMe"
+                      name="rememberMe"
+                      [(ngModel)]="loginData.rememberMe">
+                    <label class="form-check-label" for="rememberMe">
+                      Recordarme
+                    </label>
+                  </div>
+                  <a href="#" class="text-decoration-none" (click)="onForgotPassword()">
+                    ¿Olvidaste tu contraseña?
+                  </a>
+                </div>
+                -->
+
+                <!-- Botón de login -->
+                <div class="d-grid mb-3">
+                  <button 
+                    type="submit" 
+                    class="btn btn-primary btn-lg"
+                    [disabled]="loginForm.invalid || isLoading">
+                    <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2" role="status">
+                      <span class="visually-hidden">Cargando...</span>
+                    </span>
+                    <i *ngIf="!isLoading" class="bi bi-box-arrow-in-right me-2"></i>
+                    {{ isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión' }}
+                  </button>
+                </div>
+
+
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
