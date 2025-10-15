@@ -43,11 +43,9 @@
     <div class="sidebar-footer">
       <div class="user-info" *ngIf="currentUser">
         <div class="d-flex align-items-center p-3">
-          <img [src]="'https://via.placeholder.com/40x40.png?text=' + (currentUser.USR_Name.charAt(0) || 'U')" 
-               class="rounded-circle me-2" 
-               width="40" 
-               height="40"
-               [alt]="currentUser.USR_Name + ' ' + currentUser.USR_LastName">
+          <div class="avatar-circle me-2">
+            {{ (currentUser.USR_Name.charAt(0) || 'U') + (currentUser.USR_LastName.charAt(0) || '') }}
+          </div>
           <div *ngIf="!isSidebarCollapsed" class="flex-grow-1">
             <div class="text-white small">{{ currentUser.USR_Name }} {{ currentUser.USR_LastName }}</div>
             <div class="text-white-50 small">{{ currentUser.USR_UserRole }}</div>
@@ -168,7 +166,7 @@
                        (input)="onSearchChange()">
               </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-4">
               <label class="form-label">Filtrar por rol</label>
               <select class="form-select" 
                       [(ngModel)]="selectedRole"
@@ -179,19 +177,9 @@
                 <option value="trainee">Aprendiz</option>
               </select>
             </div>
-            <div class="col-md-3">
-              <label class="form-label">Filtrar por estado</label>
-              <select class="form-select" 
-                      [(ngModel)]="selectedStatus"
-                      (change)="onFilterChange()">
-                <option value="">Todos los estados</option>
-                <option value="active">Activo</option>
-                <option value="inactive">Inactivo</option>
-              </select>
-            </div>
-            <div class="col-md-2 d-flex align-items-end">
+            <div class="col-md-4 d-flex align-items-end">
               <button class="btn btn-outline-secondary w-100" 
-                      (click)="searchTerm = ''; selectedRole = ''; selectedStatus = ''; onFilterChange()">
+                      (click)="searchTerm = ''; selectedRole = ''; onFilterChange()">
                 <i class="bi bi-arrow-clockwise me-1"></i>
                 Limpiar
               </button>
@@ -216,23 +204,21 @@
                   <th>Usuario</th>
                   <th>Email</th>
                   <th>Rol</th>
-                  <th>Departamento</th>
                   <th>Teléfono</th>
-                  <th>Estado</th>
                   <th>Fecha Registro</th>
                   <th width="120">Acciones</th>
                 </tr>
               </thead>
               <tbody>
                 <tr *ngIf="isLoading">
-                  <td colspan="8" class="text-center py-4">
+                  <td colspan="6" class="text-center py-4">
                     <div class="spinner-border text-primary" role="status">
                       <span class="visually-hidden">Cargando...</span>
                     </div>
                   </td>
                 </tr>
                 <tr *ngIf="!isLoading && filteredUsers.length === 0">
-                  <td colspan="8" class="text-center py-4 text-muted">
+                  <td colspan="6" class="text-center py-4 text-muted">
                     <i class="bi bi-inbox display-6 d-block mb-2"></i>
                     No se encontraron usuarios
                   </td>
@@ -240,7 +226,10 @@
                 <tr *ngFor="let user of filteredUsers">
                   <td>
                     <div class="d-flex align-items-center">
-                      <img [src]="user.avatar || 'https://via.placeholder.com/32x32.png?text=' + user.name.charAt(0)" 
+                      <div class="avatar-circle-sm me-2" *ngIf="!user.avatar">
+                        {{ getInitials(user.name) }}
+                      </div>
+                      <img *ngIf="user.avatar" [src]="user.avatar" 
                            class="rounded-circle me-2" 
                            width="32" 
                            height="32"
@@ -254,19 +243,7 @@
                       {{ user.role }}
                     </span>
                   </td>
-                  <td>{{ user.department || '-' }}</td>
                   <td>{{ user.phone || '-' }}</td>
-                  <td>
-                    <div class="form-check form-switch">
-                      <input class="form-check-input" 
-                             type="checkbox" 
-                             [checked]="user.isActive"
-                             (change)="toggleUserStatus(user)">
-                      <label class="form-check-label">
-                        {{ user.isActive ? 'Activo' : 'Inactivo' }}
-                      </label>
-                    </div>
-                  </td>
                   <td>{{ user.createdAt | date:'short' }}</td>
                   <td>
                     <div class="btn-group btn-group-sm">
@@ -349,16 +326,21 @@
           </div>
           <div class="row">
             <div class="col-md-6 mb-3">
-              <label class="form-label">Contraseña *</label>
+              <label class="form-label">
+                Contraseña 
+                <span *ngIf="!editingUser">*</span>
+                <span *ngIf="editingUser" class="text-muted">(opcional)</span>
+              </label>
               <input type="password" 
                      class="form-control" 
                      [(ngModel)]="userForm.password"
                      name="password"
                      [required]="!editingUser"
                      minlength="8"
-                     placeholder="Mínimo 8 caracteres">
-              <small class="form-text text-muted" *ngIf="!editingUser">
-                Mínimo 8 caracteres
+                     [placeholder]="editingUser ? 'Dejar vacío para no cambiar' : 'Mínimo 8 caracteres'">
+              <small class="form-text text-muted">
+                <span *ngIf="!editingUser">Mínimo 8 caracteres</span>
+                <span *ngIf="editingUser">Solo completar si deseas cambiar la contraseña</span>
               </small>
             </div>
             <div class="col-md-6 mb-3">
@@ -375,27 +357,6 @@
               </small>
             </div>
           </div>
-          <div class="row" *ngIf="editingUser">
-            <div class="col-md-6 mb-3">
-              <label class="form-label">Departamento</label>
-              <input type="text" 
-                     class="form-control" 
-                     [(ngModel)]="userForm.department"
-                     name="department">
-            </div>
-            <div class="col-md-6 mb-3 d-flex align-items-end">
-              <div class="form-check">
-                <input class="form-check-input" 
-                       type="checkbox" 
-                       [(ngModel)]="userForm.isActive"
-                       name="isActive"
-                       id="isActive">
-                <label class="form-check-label" for="isActive">
-                  Usuario activo
-                </label>
-              </div>
-            </div>
-          </div>
         </form>
       </div>
       <div class="modal-footer">
@@ -405,7 +366,7 @@
         <button type="button" 
                 class="btn btn-primary" 
                 (click)="saveUser()"
-                [disabled]="!editingUser && (!userForm.firstName || !userForm.lastName || !userForm.email || !userForm.phone || !userForm.password || userForm.password.length < 8)">
+                [disabled]="getFormValidation()">
           <i class="bi bi-save me-1"></i>
           {{ editingUser ? 'Actualizar' : 'Crear' }}
         </button>

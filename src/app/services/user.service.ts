@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { BehaviorSubject, Observable, throwError } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
-import { User, DashboardUser, UserStats, GetAllUsersResponse, RegisterRequest, RegisterResponse, ApiErrorResponse } from '../models/user.model';
+import { User, DashboardUser, UserStats, GetAllUsersResponse, RegisterRequest, RegisterResponse, UpdateUserResponse, DeleteUserResponse, ApiErrorResponse } from '../models/user.model';
 import { environment, API_ENDPOINTS } from '../config/api.config';
 
 @Injectable({
@@ -51,21 +51,25 @@ export class UserService {
     const lastName = nameParts.slice(1).join(' ') || '';
 
     // Preparar los datos para la API de Laravel
-    const registerData: RegisterRequest = {
+    const createUserData: any = {
       USR_Name: firstName,
       USR_LastName: lastName,
       USR_Email: userData.email || '',
       USR_Phone: userData.phone || '',
       USR_Password: userData.password || 'Password123',
-      USR_UserRole: userData.role as 'trainer' | 'trainee'
+      USR_UserRole: userData.role as 'trainer' | 'trainee',
+      USR_FCM: 'token_hardcodeado_temporal'
     };
 
+    console.log('Sending create user data:', createUserData);
+
     return this.http.post<RegisterResponse>(
-      `${environment.apiUrl}${API_ENDPOINTS.register}`,
-      registerData
+      `${environment.apiUrl}${API_ENDPOINTS.createUser}`,
+      createUserData
     ).pipe(
       map(response => {
         if (response.success) {
+          console.log('User created successfully:', response);
           return this.mapUserToDashboardUser(response.data);
         }
         throw new Error(response.message);
@@ -74,19 +78,58 @@ export class UserService {
     );
   }
 
-  updateUser(userId: number, userData: Partial<DashboardUser>): Observable<DashboardUser> {
-    console.log('Update user:', userId, userData);
-    return throwError(() => new Error('Endpoint de actualizaci�n no implementado a�n'));
+  updateUser(userId: number, userData: Partial<DashboardUser> & { password?: string }): Observable<DashboardUser> {
+    // Preparar datos para la API de Laravel
+    const updateData: any = {};
+
+    // Si hay nombre, separarlo en nombre y apellido
+    if (userData.name) {
+      const nameParts = userData.name.split(' ');
+      updateData.USR_Name = nameParts[0] || '';
+      updateData.USR_LastName = nameParts.slice(1).join(' ') || '';
+    }
+
+    // Agregar otros campos solo si están presentes
+    if (userData.email) updateData.USR_Email = userData.email;
+    if (userData.phone) updateData.USR_Phone = userData.phone;
+    if (userData.password) updateData.USR_Password = userData.password;
+    if (userData.role) updateData.USR_UserRole = userData.role;
+
+    console.log('Updating user:', userId, updateData);
+
+    return this.http.put<UpdateUserResponse>(
+      `${environment.apiUrl}${API_ENDPOINTS.updateUser(userId)}`,
+      updateData
+    ).pipe(
+      map(response => {
+        if (response.success) {
+          console.log('User updated successfully:', response);
+          return this.mapUserToDashboardUser(response.data);
+        }
+        throw new Error(response.message);
+      }),
+      catchError(this.handleError.bind(this))
+    );
   }
 
   deleteUser(userId: number): Observable<void> {
-    console.log('Delete user:', userId);
-    return throwError(() => new Error('Endpoint de eliminaci�n no implementado a�n'));
+    return this.http.delete<DeleteUserResponse>(
+      `${environment.apiUrl}${API_ENDPOINTS.deleteUser(userId)}`
+    ).pipe(
+      map(response => {
+        if (response.success) {
+          console.log('Usuario eliminado:', response.deleted_user);
+          return;
+        }
+        throw new Error(response.message);
+      }),
+      catchError(this.handleError.bind(this))
+    );
   }
 
   toggleUserStatus(userId: number): Observable<DashboardUser> {
     console.log('Toggle user status:', userId);
-    return throwError(() => new Error('Endpoint de cambio de estado no implementado a�n'));
+    return throwError(() => new Error('Endpoint de cambio de estado no implementado aún'));
   }
 
   private mapUserToDashboardUser(user: User): DashboardUser {

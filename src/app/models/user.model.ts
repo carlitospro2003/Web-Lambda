@@ -67,6 +67,18 @@ export interface RegisterResponse {
   data: User;
 }
 
+export interface UpdateUserResponse {
+  success: boolean;
+  message: string;
+  data: User;
+}
+
+export interface DeleteUserResponse {
+  success: boolean;
+  message: string;
+  deleted_user: string;
+}
+
 export interface ApiErrorResponse {
   success: false;
   message: string;

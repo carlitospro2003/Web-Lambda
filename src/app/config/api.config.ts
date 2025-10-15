@@ -8,5 +8,8 @@ export const API_ENDPOINTS = {
   logout: '/logout',
   register: '/register',
   // Admin endpoints
-  getAllUsers: (filter: string) => `/admin/getAllUsers/${filter}`
+  getAllUsers: (filter: string) => `/admin/getAllUsers/${filter}`,
+  createUser: '/admin/createUser',
+  updateUser: (userId: number) => `/admin/updateUser/${userId}`,
+  deleteUser: (userId: number) => `/admin/deleteUser/${userId}`
 };

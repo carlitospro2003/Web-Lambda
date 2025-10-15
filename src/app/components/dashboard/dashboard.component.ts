@@ -26,7 +26,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
   // Filtros y búsqueda
   searchTerm = '';
   selectedRole = '';
-  selectedStatus = '';
   
   // Modal para editar/crear usuario
   showUserModal = false;
@@ -101,11 +100,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
       const matchesSearch = user.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
                           user.email.toLowerCase().includes(this.searchTerm.toLowerCase());
       const matchesRole = !this.selectedRole || user.role === this.selectedRole;
-      const matchesStatus = !this.selectedStatus || 
-                           (this.selectedStatus === 'active' && user.isActive) ||
-                           (this.selectedStatus === 'inactive' && !user.isActive);
       
-      return matchesSearch && matchesRole && matchesStatus;
+      return matchesSearch && matchesRole;
     });
   }
 
@@ -137,7 +133,19 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   openEditUserModal(user: DashboardUser): void {
     this.editingUser = user;
-    this.userForm = { ...user };
+    
+    // Separar el nombre completo en nombre y apellido
+    const nameParts = user.name.split(' ');
+    
+    this.userForm = {
+      firstName: nameParts[0] || '',
+      lastName: nameParts.slice(1).join(' ') || '',
+      email: user.email,
+      phone: user.phone,
+      role: user.role,
+      password: '' // No pre-llenar la contraseña
+    };
+    
     this.showUserModal = true;
   }
 
@@ -150,15 +158,33 @@ export class DashboardComponent implements OnInit, OnDestroy {
   saveUser(): void {
     if (this.editingUser) {
       // Actualizar usuario existente
-      this.userService.updateUser(this.editingUser.id!, this.userForm)
+      const updateData: any = {
+        name: `${this.userForm.firstName} ${this.userForm.lastName}`,
+        email: this.userForm.email,
+        phone: this.userForm.phone,
+        role: this.userForm.role
+      };
+
+      // Solo incluir la contraseña si se proporcionó una nueva
+      if (this.userForm.password && this.userForm.password.trim() !== '') {
+        updateData.password = this.userForm.password;
+      }
+
+      console.log('Updating user with data:', updateData);
+
+      this.userService.updateUser(this.editingUser.id!, updateData)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
-          next: () => {
+          next: (updatedUser) => {
+            console.log('User updated:', updatedUser);
             this.loadUsers();
             this.loadUserStats();
             this.closeUserModal();
           },
-          error: (error) => console.error('Error updating user:', error)
+          error: (error) => {
+            console.error('Error updating user:', error);
+            alert(`Error al actualizar usuario: ${error.message}`);
+          }
         });
     } else {
       // Crear nuevo usuario - preparar datos para la API
@@ -193,15 +219,19 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   deleteUser(user: DashboardUser): void {
-    if (confirm(`¿Estás seguro de que quieres eliminar a ${user.name}?`)) {
+    if (confirm(`¿Estás seguro de que quieres eliminar permanentemente a ${user.name}? Esta acción no se puede deshacer.`)) {
       this.userService.deleteUser(user.id!)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: () => {
+            alert(`Usuario ${user.name} eliminado correctamente`);
             this.loadUsers();
             this.loadUserStats();
           },
-          error: (error) => console.error('Error deleting user:', error)
+          error: (error) => {
+            console.error('Error deleting user:', error);
+            alert(`Error al eliminar usuario: ${error.message}`);
+          }
         });
     }
   }
@@ -225,6 +255,35 @@ export class DashboardComponent implements OnInit, OnDestroy {
       case 'trainee': return 'bg-primary';
       default: return 'bg-secondary';
     }
+  }
+
+  getInitials(name: string): string {
+    if (!name) return 'U';
+    const parts = name.split(' ');
+    if (parts.length >= 2) {
+      return (parts[0].charAt(0) + parts[1].charAt(0)).toUpperCase();
+    }
+    return name.charAt(0).toUpperCase();
+  }
+
+  getFormValidation(): boolean {
+    // Validación para crear nuevo usuario
+    if (!this.editingUser) {
+      return !this.userForm.firstName || 
+             !this.userForm.lastName || 
+             !this.userForm.email || 
+             !this.userForm.phone || 
+             !this.userForm.password || 
+             this.userForm.password.length < 8;
+    }
+    
+    // Validación para editar usuario (contraseña opcional)
+    const hasValidPassword = !this.userForm.password || this.userForm.password.length >= 8;
+    return !this.userForm.firstName || 
+           !this.userForm.lastName || 
+           !this.userForm.email || 
+           !this.userForm.phone ||
+           !hasValidPassword;
   }
 
   logout(): void {
