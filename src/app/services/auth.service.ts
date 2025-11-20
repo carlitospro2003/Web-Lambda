@@ -3,7 +3,7 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { BehaviorSubject, Observable, throwError } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
 import { User, LoginRequest, LoginResponse, LogoutResponse, AuthState, ApiErrorResponse } from '../models/user.model';
-import { environment, API_ENDPOINTS } from '../config/api.config';
+import { API_ENDPOINTS } from '../config/api.config';
 
 @Injectable({
   providedIn: 'root'
@@ -50,7 +50,7 @@ export class AuthService {
     this.setLoading(true);
 
     return this.http.post<LoginResponse>(
-      `${environment.apiUrl}${API_ENDPOINTS.login}`,
+      API_ENDPOINTS.login,
       credentials
     ).pipe(
       tap((response: LoginResponse) => {
@@ -75,7 +75,7 @@ export class AuthService {
     this.setLoading(true);
     
     return this.http.post<LogoutResponse>(
-      `${environment.apiUrl}${API_ENDPOINTS.logout}`,
+      API_ENDPOINTS.logout,
       {}
     ).pipe(
       tap((response) => {

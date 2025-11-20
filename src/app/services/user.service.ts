@@ -3,7 +3,7 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { BehaviorSubject, Observable, throwError } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { User, DashboardUser, UserStats, GetAllUsersResponse, RegisterRequest, RegisterResponse, UpdateUserResponse, DeleteUserResponse, ApiErrorResponse } from '../models/user.model';
-import { environment, API_ENDPOINTS } from '../config/api.config';
+import { API_ENDPOINTS } from '../config/api.config';
 
 @Injectable({
   providedIn: 'root'
@@ -16,7 +16,7 @@ export class UserService {
 
   getUsers(filter: 'trainer' | 'trainee' | 'All' = 'All'): Observable<DashboardUser[]> {
     return this.http.get<GetAllUsersResponse>(
-      `${environment.apiUrl}${API_ENDPOINTS.getAllUsers(filter)}`
+      API_ENDPOINTS.getAllUsers(filter)
     ).pipe(
       map(response => {
         if (response.success) {
@@ -32,7 +32,7 @@ export class UserService {
 
   getUserStats(): Observable<UserStats> {
     return this.http.get<GetAllUsersResponse>(
-      `${environment.apiUrl}${API_ENDPOINTS.getAllUsers('All')}`
+      API_ENDPOINTS.getAllUsers('All')
     ).pipe(
       map(response => {
         if (response.success) {
@@ -64,7 +64,7 @@ export class UserService {
     console.log('Sending create user data:', createUserData);
 
     return this.http.post<RegisterResponse>(
-      `${environment.apiUrl}${API_ENDPOINTS.createUser}`,
+      API_ENDPOINTS.createUser,
       createUserData
     ).pipe(
       map(response => {
@@ -98,7 +98,7 @@ export class UserService {
     console.log('Updating user:', userId, updateData);
 
     return this.http.put<UpdateUserResponse>(
-      `${environment.apiUrl}${API_ENDPOINTS.updateUser(userId)}`,
+      API_ENDPOINTS.updateUser(userId),
       updateData
     ).pipe(
       map(response => {
@@ -114,7 +114,7 @@ export class UserService {
 
   deleteUser(userId: number): Observable<void> {
     return this.http.delete<DeleteUserResponse>(
-      `${environment.apiUrl}${API_ENDPOINTS.deleteUser(userId)}`
+      API_ENDPOINTS.deleteUser(userId)
     ).pipe(
       map(response => {
         if (response.success) {

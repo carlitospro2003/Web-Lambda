@@ -1,15 +1,13 @@
-export const environment = {
-  production: false,
-  apiUrl: 'http://127.0.0.1:8000/api'
-};
+import { environment } from '../../environments/environment';
 
 export const API_ENDPOINTS = {
-  login: '/login',
-  logout: '/logout',
-  register: '/register',
+  login: `${environment.apiUrl}/login`,
+  logout: `${environment.apiUrl}/logout`,
+  register: `${environment.apiUrl}/register`,
+  
   // Admin endpoints
-  getAllUsers: (filter: string) => `/admin/getAllUsers/${filter}`,
-  createUser: '/admin/createUser',
-  updateUser: (userId: number) => `/admin/updateUser/${userId}`,
-  deleteUser: (userId: number) => `/admin/deleteUser/${userId}`
+  getAllUsers: (filter: string) => `${environment.apiUrl}/admin/getAllUsers/${filter}`,
+  createUser: `${environment.apiUrl}/admin/createUser`,
+  updateUser: (userId: number) => `${environment.apiUrl}/admin/updateUser/${userId}`,
+  deleteUser: (userId: number) => `${environment.apiUrl}/admin/deleteUser/${userId}`
 };
