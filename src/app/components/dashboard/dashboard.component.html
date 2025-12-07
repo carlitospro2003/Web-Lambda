@@ -19,24 +19,6 @@
             <span *ngIf="!isSidebarCollapsed">Usuarios</span>
           </a>
         </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#">
-            <i class="bi bi-graph-up me-2"></i>
-            <span *ngIf="!isSidebarCollapsed">Reportes</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#">
-            <i class="bi bi-gear me-2"></i>
-            <span *ngIf="!isSidebarCollapsed">Configuración</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#">
-            <i class="bi bi-question-circle me-2"></i>
-            <span *ngIf="!isSidebarCollapsed">Ayuda</span>
-          </a>
-        </li>
       </ul>
     </div>
 
@@ -172,7 +154,6 @@
                       [(ngModel)]="selectedRole"
                       (change)="onFilterChange()">
                 <option value="">Todos los roles</option>
-                <option value="admin">Administrador</option>
                 <option value="trainer">Entrenador</option>
                 <option value="trainee">Aprendiz</option>
               </select>
@@ -311,6 +292,7 @@
                      [(ngModel)]="userForm.email"
                      name="email"
                      required
+                     [readonly]="editingUser"
                      placeholder="ejemplo@correo.com">
             </div>
             <div class="col-md-6 mb-3">
@@ -320,6 +302,7 @@
                      [(ngModel)]="userForm.phone"
                      name="phone"
                      required
+                     [readonly]="editingUser"
                      maxlength="10"
                      placeholder="1234567890">
             </div>
